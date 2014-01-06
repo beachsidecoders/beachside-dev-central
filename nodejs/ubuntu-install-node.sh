@@ -8,6 +8,19 @@
 #
 ##############################################################
 
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 VERSION"
+    exit 1
+fi
+
+if [ $(id -u) -ne 0 ]; then
+    echo "Please re-run as root"
+    exit 2
+fi
+
+TMP="/tmp/node-install"
+VERSION=$1
+
 # Update System
 echo "System Update"
 apt-get -y update
@@ -16,16 +29,14 @@ echo "Update completed"
 # Install help app
 apt-get -y install libssl-dev git-core pkg-config build-essential curl gcc g++ checkinstall
 
-# Download & Unpack Node.js - v. 0.10.24
-echo "Download Node.js - v. 0.10.24"
-mkdir /tmp/node-install
-cd /tmp/node-install
-wget http://nodejs.org/dist/v0.10.24/node-v0.10.24.tar.gz
-tar -zxf node-v0.10.24.tar.gz
+# Download & Unpack Node.js
+echo "Download Node.js - v. $VERSION"
+mkdir $TMP
+curl -L http://nodejs.org/dist/v${VERSION}/node-v${VERSION}.tar.gz | tar -C $TMP -xz
 echo "Node.js download & unpack completed"
 
 # Install Node.js
-echo Install Node.js
-cd node-v0.10.24
-./configure && make && checkinstall --install=yes --pkgname=nodejs --pkgversion "0.10.24" --default
+echo "Install Node.js"
+cd $TMP/node-v${VERSION}
+./configure && make && checkinstall --install=yes --pkgname=nodejs --pkgversion "$VERSION" --default
 echo "Node.js install completed"
